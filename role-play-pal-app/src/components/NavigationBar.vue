@@ -1,6 +1,6 @@
 <template>
 
-<nav class="relative flex flex-wrap items-center justify-between  py-4 bg-purple-700 ">
+<nav class="relative flex flex-wrap items-center justify-between  py-4 bg-black ">
     <div class="container mx-2 flex flex-wrap items-center justify-between">
       <div class="w-full relative flex justify-between lg:w-auto   lg:static lg:block lg:justify-start">
         <a class="text-md font-bold leading-relaxed inline-block mr-4 py-2 whitespace-nowrap uppercase text-white" >
