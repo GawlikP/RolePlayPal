@@ -1,4 +1,5 @@
 <template>
+  <NavigationBar/>
   <div class="home">
     <div class="container mx-auto flex  justify-center border-8 border-purple-600 rounded-md">
       <img alt="Vue logo" src="../assets/logo.png">
@@ -10,11 +11,13 @@
 <script>
 // @ is an alias to /src
 import HelloWorld from '@/components/HelloWorld.vue'
-
+import NavigationBar from '@/components/NavigationBar.vue'
 export default {
   name: 'Home',
   components: {
-    HelloWorld
+    HelloWorld,
+    NavigationBar
+    
   }
 }
 </script>
