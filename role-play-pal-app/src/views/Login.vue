@@ -9,20 +9,20 @@
                     <div>  </div>
                     <div class="bg-5 rounded-2xl text-center items-center justify-center">
                         <p class="mt-2 text-center text-3xl font-bold text-gray">
-                            Login 
+                            Zaloguj się
                         </p>
                     </div>
                     <div>
                         <div class="my-4 mx-2  rounded-xl bg-purple-900 items-center justify-center">
                         <div class="rounded-md shadow-md -space-y-px">    
-                            <input type="text" name="username" autocomplete="username" v-model="username" class="appearance-none text-center rounded relative block w-full px-2 py-2 border border-purple-800 placeholder-gray-600 text-gray-900 focus:text-left focus:outline-none focus:ring-green-600 focus:border-green-600 focus:z-10 lg:text-3xl md:text-2xl sm:text-xl" placeholder="Username" /> 
+                            <input type="text" name="username" autocomplete="username" v-model="username" class="appearance-none text-center rounded relative block w-full px-2 py-2 border border-purple-800 placeholder-gray-600 text-gray-900 focus:text-left focus:outline-none focus:ring-green-600 focus:border-green-600 focus:z-10 lg:text-3xl md:text-2xl sm:text-xl" placeholder="Nazwa użytkownika" /> 
                         </div>
                         </div>
                     </div>
                     <div>
                         <div class="my-4 mx-2  rounded-xl bg-purple-900 items-center justify-center">
                         <div class="rounded-md shadow-md -space-y-px">    
-                            <input type="password" name="password" autocomplete="password" v-model="password" class="appearance-none text-center rounded relative block w-full px-2 py-2 border border-purple-800 placeholder-gray-600 text-gray-900 focus:text-left  focus:outline-none focus:ring-green-600 focus:text-centered focus:border-green-600 focus:z-10 lg:text-3xl md:text-2xl sm:text-xl" placeholder="Passoword" /> 
+                            <input type="password" name="password" autocomplete="password" v-model="password" class="appearance-none text-center rounded relative block w-full px-2 py-2 border border-purple-800 placeholder-gray-600 text-gray-900 focus:text-left  focus:outline-none focus:ring-green-600 focus:text-centered focus:border-green-600 focus:z-10 lg:text-3xl md:text-2xl sm:text-xl" placeholder="Hasło" /> 
                         </div>
                         </div>
                     </div>
@@ -52,7 +52,7 @@
                     </div>
                     <div class="flex iems-center justify-center min-w-full lg:my-1 sm:my-8">
                         <button type="submit" v-on:click="logIn()" class="my-4 mx-4  sm:py-4  rounded-xl min-w-full bg-white border border-purple-800 boreder-1 items-center justify-center hover:bg-purple-900 hover:text-white lg:text-3xl sm:text-2xl font-bold shadow-md">  
-                            <span type="text" name="email" class="" placeholder="Email" > Login </span> 
+                            <span type="text" name="email" class="" placeholder="Email" > Zaloguj </span> 
                         </button>
                     </div>
                      <div id="done" v-if="ok">
@@ -105,10 +105,6 @@ export default({
                 if(res.status == 200){
                     return res.json()
                 }else {
-                    //return res.text().then(text => {throw new Error(text)})
-                    //console.log(res.json())
-                   //return res.data.then( dat => {throw new Error(dat)})
-                   // return res.json().then(dat => { console.log(dat);throw response})
                    throw res
                 }
             }
