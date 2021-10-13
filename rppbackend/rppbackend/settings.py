@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'djoser',
     'channels',
+    'posts',
+    'post_category',
 ]
 
 CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]

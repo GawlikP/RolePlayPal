@@ -4,7 +4,7 @@
             <NavigationBar/>
                 <div class="grid grid-cols-3 gap-4 flex min-w-full my-8">
                 <div></div>
-                <div class="grid grid-cols-1 gap-4 flex min-w-full my-8 md:col-span-3 lg:col-span-1 col-span-3">
+                <div class="grid grid-cols-1 gap-4 flex min-w-full my-8 md:col-span-1 lg:col-span-1 col-span-3">
                 <form @submit.prevent>
                     <div>  </div>
                     <div class="bg-5 rounded-2xl text-center items-center justify-center">
@@ -50,7 +50,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex iems-center justify-center min-w-full lg:my-1 sm:my-8">
+                    <div class="flex items-center justify-center min-w-full lg:my-1 sm:my-8">
                         <button type="submit" v-on:click="logIn()" class="my-4 mx-4  sm:py-4  rounded-xl min-w-full bg-white border border-purple-800 boreder-1 items-center justify-center hover:bg-purple-900 hover:text-white lg:text-3xl sm:text-2xl font-bold shadow-md">  
                             <span type="text" name="email" class="" placeholder="Email" > Zaloguj </span> 
                         </button>
@@ -115,7 +115,7 @@ export default({
                     this.$store.commit({type:'logUser', token:response['auth_token'], username:this.username})
             }))
             .catch(err => {
-             
+                
                 err.json().then(json => {
                     this.error = json
                 });

@@ -12,6 +12,9 @@ export default({
   setup() {
     
   },
+  beforeCreate(){
+    this.$store.commit({type:'initializeStore'})
+  }
 
 })
 </script>

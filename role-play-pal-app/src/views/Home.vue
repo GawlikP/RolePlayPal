@@ -1,21 +1,58 @@
 <template>
-  <NavigationBar/>
-  <div class="home">
-    <div class="container mx-auto flex  justify-center border-8 border-purple-600 rounded-md">
-      <img alt="Vue logo" src="../assets/logo.png">
-      <HelloWorld msg="Welcome to Your Vue.js App"/>
-    </div>
+  <div id="Home" class="min-h-screen">
+    <NavigationBar/>
+
+      <div class="container   min-w-full my-1 py-1 justify-center grid grid-cols-1">
+        <div class="grid grid-cols-5 gap-2 py-1 flex min-w-full my-1">
+          <div></div>
+          <div class="min-w-full my-1 col-span-3 lg:col-span-3 sm:col-span-5"> 
+            <PostFormComponent />
+          </div>
+          <div> </div>
+        </div>
+        
+        <PostRecentComponent/>
+
+      </div>
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import PostFormComponent from '@/components/PostFormComponent.vue'
+import PostRecentComponent from '@/components/PostRecentComponent.vue'
 import NavigationBar from '@/components/NavigationBar.vue'
 export default {
   name: 'Home',
+  data(){
+        return {
+            posts_ids:[2,3,4,7],
+            posts: [
+                {
+                  id: 32,
+                  title: "Some random title", 
+                  content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id odio id mauris commodo blandit vitae id metus. Sed sit amet ipsum ut est porttitor varius id vitae sem. Aenean velit nibh, tincidunt sit amet neque ut, elementum sodales erat. Proin erat risus, faucibus a nunc sit amet, malesuada viverra odio. Sed malesuada felis dui, quis aliquam mi ullamcorper eget. Donec suscipit, felis ut ultrices iaculis, ex velit ultricies nunc, ac sollicitudin justo ligula nec quam. Vivamus commodo, lectus eu auctor maximus, nibh tellus tincidunt erat, vitae volutpat libero orci at mauris. Nunc nec felis iaculis justo sagittis viverra. Donec lobortis convallis finibus.",
+                  pluses: 3213,
+                  minuses: 42342,
+                  author: "Jacob",
+
+                },
+                {
+                  id: 3,
+                  title: "Some random title", 
+                  content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id odio id mauris commodo blandit vitae id metus. Sed sit amet ipsum ut est porttitor varius id vitae sem. Aenean velit nibh, tincidunt sit amet neque ut, elementum sodales erat. Proin erat risus, faucibus a nunc sit amet, malesuada viverra odio. Sed malesuada felis dui, quis aliquam mi ullamcorper eget. Donec suscipit, felis ut ultrices iaculis, ex velit ultricies nunc, ac sollicitudin justo ligula nec quam. Vivamus commodo, lectus eu auctor maximus, nibh tellus tincidunt erat, vitae volutpat libero orci at mauris. Nunc nec felis iaculis justo sagittis viverra. Donec lobortis convallis finibus.",
+                  pluses: 32,
+                  minuses: 4,
+                  author: "Tom",
+
+                },
+            ],
+            ok: false, 
+        }
+    },
   components: {
-    HelloWorld,
+    PostFormComponent,
+    PostRecentComponent,
     NavigationBar
     
   }

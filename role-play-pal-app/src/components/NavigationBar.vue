@@ -14,12 +14,12 @@
         <ul class="flex flex-col lg:flex-row list-none ml-auto">
           <li class="nav-item">
             <a class="px-3 py-2 flex items-center text-xl uppercase font-bold leading-snug text-white hover:opacity-75" >
-              <i class="fas fa-home" style="bold"></i><router-link to="/">Home</router-link> 
+              <i class="fas fa-home" style="bold"></i><router-link to="/">Główna</router-link> 
             </a>
           </li>
           <li class="nav-item">
             <a class="px-3 py-2 flex items-center text-xl uppercase font-bold leading-snug text-white hover:opacity-75" >
-             <i class="fas fa-info-circle"></i><router-link to="/about">About</router-link>
+             <i class="fas fa-info-circle"></i><router-link to="/about">Info</router-link>
             </a>
           </li>
           <li class="nav-item">
