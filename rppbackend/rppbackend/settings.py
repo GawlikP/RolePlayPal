@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'channels',
     'posts',
     'post_category',
+    'posts_reactions',
 ]
 
 CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]

@@ -13,11 +13,15 @@ from rest_framework.parsers import JSONParser
 
 from .serializers import PostDetailSerializer, PostListSerializer, CategoriesListSerializer
 from .models import Post
-from rest_framework import status 
+from rest_framework import serializers, status 
 
 from rest_framework.response import Response
 
 from post_category.models import PostCategory
+
+from posts_reactions.serializers import ReactionListSerializer
+from posts_reactions.models import PostReaction
+
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -29,7 +33,6 @@ def PostListView(request, format=None):
         return Response(serializer.data, status=status.HTTP_200_OK)
     if request.method == 'POST':
         data = request.data 
-        print(request.user.id)
         data['author'] = request.user.id
         serializer = PostDetailSerializer(data= data)
         if serializer.is_valid():
@@ -66,3 +69,60 @@ def CategoriesListView(request, format=None):
         categories = PostCategory.objects.all()
         serializer = CategoriesListSerializer(categories, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def PostReactionsListView(request, category_slug, post_slug, format=None):
+    try:
+        post = Post.objects.filter(category__slug=category_slug).get(slug=post_slug)
+    except Post.DoesNotExist:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'GET':
+        reactions = PostReaction.objects.filter(post = post)
+        serializer = ReactionListSerializer(reactions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == 'POST':
+        if PostReaction.objects.filter(post=post).filter(user=request.user).exists():
+            return Response({"erorr": "Reaction Already Exists"},status.HTTP_409_CONFLICT)
+        data = request.data 
+        data['user'] = request.user.id
+        data['post'] = post.id
+        serializer = ReactionListSerializer(data= data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def UserPostReactionsView(request,category_slug,post_slug, format=None):
+    try:
+        post = Post.objects.filter(category__slug=category_slug).get(slug=post_slug)
+    except Post.DoesNotExist:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'GET':
+        try:
+            reactions = PostReaction.objects.filter(post= post).get(user= request.user.id)
+        except PostReaction.DoesNotExist:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ReactionListSerializer(reactions)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def PostsReactionsListView(request, format=None):
+    reactions = PostReaction.objects.all()
+    serializer = ReactionListSerializer(reactions, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def UserPostsReactionsView(request,format=None):
+    try:
+        reactions = PostReaction.objects.filter(user=request.user)
+    except PostReaction.DoesNotExist:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+    serializer = ReactionListSerializer(reactions, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
