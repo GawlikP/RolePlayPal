@@ -5,7 +5,7 @@
       <div class="container   min-w-full my-1 py-1 justify-center grid grid-cols-1">
         <div class="grid grid-cols-5 gap-2 py-1 flex min-w-full my-1">
           <div></div>
-          <div class="min-w-full my-1 col-span-3 lg:col-span-3 sm:col-span-5"> 
+          <div class="min-w-full my-1 col-span-5 xl:col-span-3 lg:col-span-3 md:col-span-5 sm:col-span-5"> 
             <PostFormComponent />
           </div>
           <div> </div>

@@ -22,6 +22,8 @@ from post_category.models import PostCategory
 from posts_reactions.serializers import ReactionListSerializer
 from posts_reactions.models import PostReaction
 
+from rest_framework.renderers import JSONRenderer
+
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -108,14 +110,16 @@ def UserPostReactionsView(request,category_slug,post_slug, format=None):
             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
         
         serializer = ReactionListSerializer(reactions)
+        
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def PostsReactionsListView(request, format=None):
-    reactions = PostReaction.objects.all()
-    serializer = ReactionListSerializer(reactions, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == 'GET':
+        reactions = PostReaction.objects.all()
+        serializer = ReactionListSerializer(reactions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

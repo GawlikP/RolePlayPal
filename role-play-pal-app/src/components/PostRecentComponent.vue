@@ -3,15 +3,14 @@
     <div  v-if="error.length < 1"  >
         <div id="rows" v-for="(post, index) in posts" v-bind:key="index" class="grid grid-cols-5 gap-2 py-1 flex min-w-full my-1">
             <div div="my-1"></div> 
-                <div class="min-w-full my-1 col-span-3 lg:col-span-3 md:col-span-5 sm:col-span-5">
-                <PostViewComponent v-bind:id="post.id" v-bind:title="post.title" v-bind:content="post.content" v-bind:pluses="post.pluses" v-bind:minuses="post.minuses" v-bind:author="post.author" v-bind:author_username="post.author_username" v-bind:get_absolute_url="post.get_absolute_url"/>
-                
+                <div class="min-w-full col-span-5  my-1 xl:col-span-3 lg:col-span-3 md:col-span-5 sm:col-span-5">
+                <PostViewComponent v-bind:id="post.id" v-bind:title="post.title" v-bind:content="post.content" v-bind:pluses="post.pluses" v-bind:minuses="post.minuses" v-bind:author="post.author" v-bind:author_username="post.author_username" v-bind:absolute_url="post.get_absolute_url"/>
                 </div>
-            <div class="w-full my-1" ></div>
+            <div class="my-1" ></div>
         </div>
     </div>
     <div v-if="error.length > 0">
-        <div class="min-w-full my-1 col-span-3 lg:col-span-3 md:col-span-5 sm:col-span-5">
+        <div class="min-w-full my-1  xl:col-span-3 lg:col-span-3 md:col-span-5 sm:col-span-5 ">
              <div class="container fluid mx-3 min-w-full min-h-10 px-2 py-2 items-center justify-center shadow-md text-3xl font-bold  border border-gray-600 rounded-xl ">
                 <p class="text-center">COS POSZLO NIE TAK </p>
             </div>

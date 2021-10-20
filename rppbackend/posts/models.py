@@ -13,14 +13,16 @@ from django.utils.text import slugify
 
 from post_category.models import PostCategory
 
+from django.core.validators import MinValueValidator
+
 class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=True)
     deleted = models.BooleanField(default=False)
     title = models.CharField(max_length=512, blank=False)
     content = models.TextField(default='')
     tags = models.TextField(blank=True, default='')
-    pluses = models.IntegerField(default=0)
-    minuses = models.IntegerField(default=0)
+    pluses = models.PositiveIntegerField(default=0)
+    minuses = models.PositiveIntegerField(default=0)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     shadowed = models.BooleanField(default=False)
     reports = models.IntegerField(default=0)
