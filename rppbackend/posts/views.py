@@ -12,6 +12,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import JSONParser
 
 from .serializers import PostDetailSerializer, PostListSerializer, CategoriesListSerializer
+from comments.serializers import PostCommentListSerialzier
 from .models import Post
 from rest_framework import serializers, status 
 
@@ -22,7 +23,11 @@ from post_category.models import PostCategory
 from posts_reactions.serializers import ReactionListSerializer
 from posts_reactions.models import PostReaction
 
+from comments.models import PostComment
+
 from rest_framework.renderers import JSONRenderer
+
+
 
 
 @api_view(['GET','POST'])
@@ -130,3 +135,47 @@ def UserPostsReactionsView(request,format=None):
         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     serializer = ReactionListSerializer(reactions, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET','POST','PUT'])
+@permission_classes([IsAuthenticated])
+def PostCommentListView(request, category_slug, post_slug, pk, format=None):    
+    try:
+        post = Post.objects.filter(category__slug = category_slug).get(slug= post_slug)
+    except Post.DoesNotExist:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'GET':
+        try: 
+            comments = PostComment.objects.filter(post = post)    
+        except PostComment.DoesNotExist:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND) 
+        serializer = PostCommentListSerialzier(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == 'POST':
+
+        data = request.data
+        data['user'] = request.user.id
+        data['post'] = post.id 
+        serializer = PostCommentListSerialzier(data= data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def PostCommentDetailView(request, pk, format=None):
+    if request.method == 'PUT':
+        data = request.data
+        data['user'] = request.user.id 
+        try:
+            postcomment = PostComment.objects.get(pk=pk)
+        except PostComment.DoesNotExist:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+        data['post'] = postcomment.post.id
+        serializer = PostCommentListSerialzier(postcomment, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status= status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+

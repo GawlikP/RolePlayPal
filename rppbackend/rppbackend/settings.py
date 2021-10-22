@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'posts',
     'post_category',
     'posts_reactions',
+    'comments',
 ]
 
 CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]
