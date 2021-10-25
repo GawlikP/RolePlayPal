@@ -19,8 +19,8 @@
 
 <script>
 // @ is an alias to /src
-import PostFormComponent from '@/components/PostFormComponent.vue'
-import PostRecentComponent from '@/components/PostRecentComponent.vue'
+import PostFormComponent from '@/components/Posts/PostFormComponent.vue'
+import PostRecentComponent from '@/components/Posts/PostRecentComponent.vue'
 import NavigationBar from '@/components/NavigationBar.vue'
 export default {
   name: 'Home',

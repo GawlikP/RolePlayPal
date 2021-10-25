@@ -6,13 +6,14 @@
             <p class="break-all text-center font-bold text-xl text-gray-100 min-w-full bg-black rounded-xl "> T: {{title}}  </p>
             <p class="break-all mx-1 py-2"> {{content}}  </p>
               <PostReactionsComponent v-bind:pluses="pluses" v-bind:minuses="minuses" v-bind:absolute_url="absolute_url" />
+              <CommentViewComponent v-bind:post_absolute_url="absolute_url" />
         </div>
     </div>
 </template>
 
 <script>
-import PostReactionsComponent from '@/components/PostReactionsComponent.vue'
-
+import PostReactionsComponent from '@/components/Posts/PostReactionsComponent.vue'
+import CommentViewComponent from '@/components/Posts/Comments/CommentViewComponent.vue'
 export default {
   name: 'PostViewComponent',
   props: {
@@ -26,7 +27,8 @@ export default {
     absolute_url: String,
   },
   components:{
-    PostReactionsComponent
+    PostReactionsComponent,
+    CommentViewComponent
   }
 }
 </script>

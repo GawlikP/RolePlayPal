@@ -20,7 +20,7 @@
 </template>
 <script>
 
-import PostViewComponent from '@/components/PostViewComponent.vue'
+import PostViewComponent from '@/components/Posts/PostViewComponent.vue'
 export default {
   name: 'PostRecentComponent',
   data(){
