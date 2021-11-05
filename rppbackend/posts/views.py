@@ -138,7 +138,7 @@ def UserPostsReactionsView(request,format=None):
 
 @api_view(['GET','POST','PUT'])
 @permission_classes([IsAuthenticated])
-def PostCommentListView(request, category_slug, post_slug, pk, format=None):    
+def PostCommentListView(request, category_slug, post_slug, format=None):    
     try:
         post = Post.objects.filter(category__slug = category_slug).get(slug= post_slug)
     except Post.DoesNotExist:
@@ -158,7 +158,7 @@ def PostCommentListView(request, category_slug, post_slug, pk, format=None):
         serializer = PostCommentListSerialzier(data= data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 @api_view(['PUT'])
