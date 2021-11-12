@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'post_category',
     'posts_reactions',
     'comments',
+    'chat',
 ]
 
 CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]
@@ -82,6 +83,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'rppbackend.wsgi.application'
+ASGI_APPLICATION = 'rppbackend.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        'CONFIG':{
+                "hosts": [('127.0.0.1', 6379),('localhost', 6379)],
+        }
+    }
+}
 
 
 REST_FRAMEWORK = {
