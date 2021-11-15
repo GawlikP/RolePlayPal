@@ -113,7 +113,11 @@ ENV/
 env.bak/
 venv.bak/
 SS
-
+linux-python-env/
+garoda-python-env/
+arch-python-env/
+arch-env/
+garoda-env/
 
 # Spyder project settings
 .spyderproject

@@ -1,22 +1,26 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8"/>
-		<title> Chat Room </title>
-	</head>
-	<body>
-		<textarea id="chat-log" cols="100" rows="20"></textarea><br>
-		<input id="chat-message-input" type="text" size="100"><br>
-		<input id="chat-message-submit" type="button" value="Send">
-		{{ room_name|json_script:"room-name"}}
-		<script>
-			const roomName = JSON.parse(document.getElementById('room-name').textContent);
-			const chatSocket = new WebSocket(
+<div class="container">
+    <div class="jumbotron">
+        <div class="form-group">
+    <textarea class="form-control" id="chat-log" cols="100" rows="20"></textarea><br>
+    <input class="form-control" id="chat-message-input" type="text" size="100"><br>
+    <input class="btn btn-primary" id="chat-message-submit" type="button" value="Send">
+    {{ room_name|json_script:"room-name" }}
+            </div>
+    </div>
+    </div>
+    <script>
+        var authToken = 'ab7fb112fe02381aef96ac8a9846eaf5bfbb3adc';
+
+        document.cookie = 'X-Authorization=' + authToken + '; path=/';
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
             + '/ws/chat/'
             + roomName
-            + '/'
+            + '/'+
+            `?authorization=${authToken}`
         );
 
         chatSocket.onmessage = function(e) {
@@ -26,6 +30,8 @@
 
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
+            console.log(chatSocket);
+            document.querySelector('#chat-log').value += ('Connection Failed \n')
         };
 
         document.querySelector('#chat-message-input').focus();
@@ -39,12 +45,8 @@
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             chatSocket.send(JSON.stringify({
-                'message': message
+                'message': message,
             }));
             messageInputDom.value = '';
         };
-			  
-
-		</script>
-	</body>
-</html>
+    </script>
