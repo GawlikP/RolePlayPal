@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'posts_reactions',
     'comments',
     'chat',
+    'profiles',
 ]
 
 CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]
