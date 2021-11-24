@@ -29,7 +29,7 @@ from datetime import datetime
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
-def ProfileListView(request, format=None):
+def ProfileListView(request, format='png'):
     if request.method == 'GET':
         profiles = Profile.objects.all()
         serializer = ProfileDetailSerializer(profiles, many=True)
@@ -39,10 +39,17 @@ def ProfileListView(request, format=None):
         data = request.data 
         data['user'] = request.user.id  
         
-        profiles = Profile.objects.get(user=request.user)
+        img = request.FILES 
+
+        
+       
+        
+        profiles = Profile.objects.filter(user=request.user)
         
         if profiles:
-            return Reesponse({'errors' : 'profile already exists'}, status=HTTP_409_CONFLICT)
+            return Response({'errors' : {'user':'profile already exists'}}, status=status.HTTP_409_CONFLICT)
+        if 'file' in img:
+            data['image'] = img
         serializer = ProfileDetailSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -61,17 +68,56 @@ def ProfileDetailView(request, pk, format=None):
     
     if request.method == 'GET':
         serializer = ProfileDetailSerializer(post)
-        return Response(serualizer.data, status.HTTP_200_OK)
+        return Response(serializer.data, status.HTTP_200_OK)
     
     if request.method == 'PUT':
         if profile.user.id != request.user.id:
             return Response({'error': 'Permission denaied'}, status=status.HTTP_406_NOT_ACCEPTABLE)
         data = JSONParser().parse(request)
-        
+        img = request.FILES
+
+        if 'file' in img:
+            data['image'] = img
+        data['edited'] = datetime.now()
+        data['user'] = request.user.id
         serializer = ProfileDetailSerializer(profile, data=data)
         if serializer.is_valid():
-            seriaizer.validated_data['edited'] = datetime.now()
-            seriaizer.validated_data['user'] = request.user
+            
+            profile = serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def ProfileDetailSlugView(request, profile_slug, format=None):
+
+    try: 
+        profile = Profile.objects.get(slug= profile_slug)
+    except Profile.DoesNotExist:
+        return Response(data={"errors": { "profile": "Does not exist" }},status=status.HTTP_404_NOT_FOUND)
+
+    
+    if request.method == 'GET':
+        serializer = ProfileDetailSerializer(profile)
+        return Response(serializer.data, status.HTTP_200_OK)
+    
+    if request.method == 'PUT':
+        if profile.user.id != request.user.id:
+            return Response({'error': 'Permission denaied'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        data = request.data
+        data['edited'] = datetime.now()
+        data['user'] = request.user.id
+        
+        if 'image' in data:
+            print(data['image'])
+            profile.image = data['image']
+            profile.save()
+            
+        
+        serializer = ProfileDetailSerializer(profile, data=data, partial=True)
+        if serializer.is_valid():
+           
             profile = serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)

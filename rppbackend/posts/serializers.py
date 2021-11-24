@@ -21,7 +21,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
     class Meta: 
         model = Post 
-        read_only_fields = ('id', 'author')
+        read_only_fields = ('id', 'author', 'slug')
         fields = ['id', 'category', 'category_name', 'created', 'deleted', 'title', 'content', 'pluses', 'minuses', 'author', 'author_username', 'shadowed', 'reports', 'slug', 'get_absolute_url', 'get_image', 'get_thumbnail']
         
 class CategoriesListSerializer(serializers.ModelSerializer):

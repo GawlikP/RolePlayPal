@@ -27,17 +27,26 @@ from comments.models import PostComment
 
 from rest_framework.renderers import JSONRenderer
 
-
-
+from django.core.paginator import Paginator
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def PostListView(request, format=None):
     if request.method == 'GET':
         posts = Post.objects.all()
-        serializer = PostListSerializer(posts, many=True) 
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        page_number = request.query_params.get('page_number', 1)                       
+        page_size = request.query_params.get('page_size',5)        
+            
+        paginator = Paginator(posts, page_size)
+        if int(page_number) > paginator.num_pages:
+            return Response({'error': 'Page do not exist!'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = PostListSerializer(paginator.page(page_number), many=True)
+        data = {}
+        data['posts'] = serializer.data 
+        data['page_numbers'] = paginator.num_pages
+        data['next_page'] = False if int(page_number) >= paginator.num_pages else True 
+        return Response(data, status=status.HTTP_200_OK)
+        
     if request.method == 'POST':
         data = request.data 
         data['author'] = request.user.id

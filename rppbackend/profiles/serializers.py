@@ -10,5 +10,6 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         read_only_fields = ('id' ,'user_username')
-        fields = ['id','user','user_username','created','edited','description','note','preffered_role']
+        #write_only_fields = ('image', 'thumbnail')
+        fields = ['id', 'user','user_username','created','edited','description','note','preferred_role', 'get_image', 'get_thumbnail', 'slug']
 
