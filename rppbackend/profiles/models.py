@@ -30,7 +30,7 @@ class Profile(models.Model):
     description = models.TextField()
     note = models.TextField(max_length=512)
     preferred_role = models.BooleanField(default=False)
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    user = models.OneToOneField(User,on_delete=models.CASCADE, related_name='user')
     deleted = models.BooleanField(default=False)
     banned = models.BooleanField(default=False)
     slug = models.SlugField(max_length=1024,blank=True, default='')
@@ -71,7 +71,7 @@ class Profile(models.Model):
         return thumbnail
 
 @receiver(post_save, sender=Profile)
-def update_pluses_minuses_field(sender,instance,created, **kawgs):
+def update_slug_field(sender,instance,created, **kawgs):
     if created:
         instance.slug  = unique_slugify(instance, slugify(instance.user.username))
         
