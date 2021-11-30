@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/posts/', include('posts.urls')),
     path('chat/', include('chat.urls')),
     path('api/profiles/', include('profiles.urls')),
+    path('api/games/', include('games.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

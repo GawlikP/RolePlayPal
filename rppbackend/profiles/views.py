@@ -65,18 +65,26 @@ def ProfileDetailView(request, pk, format=None):
     
     if request.method == 'PUT':
         if profile.user.id != request.user.id:
-            return Response({'error': 'Permission denaied'}, status=status.HTTP_406_NOT_ACCEPTABLE)
-        data = JSONParser().parse(request)
-        img = request.FILES
+            return Response({'errors': {"user":'Permission denaied'}}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        if 'file' in img:
-            data['image'] = img
+        data = request.data
         data['edited'] = datetime.now()
         data['user'] = request.user.id
-        serializer = ProfileDetailSerializer(profile, data=data)
-        if serializer.is_valid():
+        
+        if 'image' in data:
+            print(data['image'])
+            profile.image.delete()
+            profile.image = data['image']
+            profile.make_thumbnail(profile.image)
+            profile.save()
             
+        
+        serializer = ProfileDetailSerializer(profile, data=data, partial=True)
+        if serializer.is_valid():
+           
             profile = serializer.save()
+            
+            
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -96,7 +104,7 @@ def ProfileDetailSlugView(request, profile_slug, format=None):
     
     if request.method == 'PUT':
         if profile.user.id != request.user.id:
-            return Response({'error': 'Permission denaied'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response({'errors': {"user":'Permission denaied'}}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         data = request.data
         data['edited'] = datetime.now()

@@ -61,7 +61,7 @@ class Profile(models.Model):
             else:
                 return '' 
 
-    def make_thumbnail(self, image, size=(800,640)):
+    def make_thumbnail(self, image, size=(800,800)):
         img = Image.open(image)
         img.convert('RGB')
         img.thumbnail(size)

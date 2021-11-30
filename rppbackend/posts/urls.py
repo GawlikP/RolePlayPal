@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import PostListView, PostDetailView, CategoriesListView, PostReactionsListView, UserPostReactionsView, PostsReactionsListView, UserPostsReactionsView
-from .views import PostCommentListView, PostCommentDetailView
+from .views import PostCommentListView, PostCommentDetailView, PostCategoryListView
 
 
 
@@ -15,5 +15,6 @@ urlpatterns = [
       path('<slug:category_slug>/<slug:post_slug>/reactions/', PostReactionsListView, name='reactions_list'),
       path('<slug:category_slug>/<slug:post_slug>/reactions/me/', UserPostReactionsView, name='user_post_reactions_list'),
       path('<slug:category_slug>/<slug:post_slug>/comments/', PostCommentListView, name='postcomment_list_and_post'),
+      path('<slug:category_slug>/', PostCategoryListView, name='all post in category')
   
 ]
