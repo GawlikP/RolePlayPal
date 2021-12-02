@@ -197,8 +197,7 @@ def PostCategoryListView(request, category_slug, format=None):
     category_posts = Post.objects.filter(category__slug=category_slug).all()
     if not category_posts.exists():
         return Response(data={"errors":{"Posts": "No posts found"}})
-
-    print(category_posts)
+        
     if request.method == 'GET':
         serializer = PostDetailSerializer(category_posts, many=True)
         return Response(serializer.data, status.HTTP_200_OK)

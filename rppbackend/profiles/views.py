@@ -18,13 +18,19 @@ from .serializers import ProfileDetailSerializer
 from rest_framework.renderers import JSONRenderer
 from datetime import datetime
 from django.contrib.auth.models import User
-
+from django.db.models import Q
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def ProfileListView(request, format='png'):
     if request.method == 'GET':
         profiles = Profile.objects.all()
+        if request.GET.get('username'):
+            profiles = profiles.filter((Q(user__username__contains=request.GET.get('username'))) | (Q(slug__contains=request.GET.get('slug'))) )
+        #if request.GET.get('slug'):
+        #    profiles = profiles.filter(Q(slug__contains=request.GET.get('slug')))
+        if not profiles.exists():
+            return Response({"errors":{"profiles":"Nothing to show"}}, status=status.HTTP_404_NOT_FOUND)
         serializer = ProfileDetailSerializer(profiles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -148,7 +154,7 @@ def ProfileActualUserView(request, format=None):
     try: 
         profile = Profile.objects.get(user__id= id)
     except Profile.DoesNotExist:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+        return HttpResponse(data={"errors": {"profile": "Does not exist"}},status=status.HTTP_404_NOT_FOUND)
 
     
     if request.method == 'GET':
