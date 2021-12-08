@@ -11,6 +11,8 @@ from .serializers import GameListSerializer, GameInvitationListSerializer, GameI
 from django.contrib.auth.models import User 
 from datetime import datetime
 from profiles.models import Profile
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -37,17 +39,34 @@ def GamePlayersListView(request, game_slug, format=None):
     except Game.DoesNotExist:
         return Response(data={"errors": { "profile": "Does not exist" }},status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
+
+
         serializer = PlayerSerializer(game.players, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def UsersGameListView(request, format=None):
     if request.method == "GET":
-        games = Game.objects.filter(players__id = request.user.id) |  Game.objects.filter(game_master__id= request.user.id).all()
+        #games = Game.objects.filter(game_master__id= request.user.id)#Game.objects.filter(players__id = request.user.id) #  
+        games = Game.objects.filter( Q(players__id = request.user.id) | Q(game_master__id = request.user.id)).distinct()
+        
         if not games.exists():
             return Response(data={"errors": {"games": "Nothing to show"}}, status=status.HTTP_404_NOT_FOUND)
-        serializer = GameListSerializer(games, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        page_number = request.query_params.get('page_number', 1)                       
+        page_size = request.query_params.get('page_size',5) 
+
+        paginator = Paginator(games, page_size)
+        if int(page_number) > paginator.num_pages:
+            return Response({'error': 'Page do not exist!'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = GameListSerializer(paginator.page(page_number), many=True)
+        data = {}
+        data['games'] = serializer.data 
+        data['page_numbers'] = paginator.num_pages
+        data['next_page'] = False if int(page_number) >= paginator.num_pages else True
+        print(data['page_numbers'])
+        return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])

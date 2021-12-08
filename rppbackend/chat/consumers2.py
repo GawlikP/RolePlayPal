@@ -6,7 +6,7 @@ from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
 
 from rest_framework.authtoken.models import Token
-from games.models import Game
+
 import re
 
 
@@ -17,22 +17,12 @@ def get_user(token):
         return token.user
     except Token.DoesNotExist:
         return "error"
-@database_sync_to_async
-def get_room_data(room_key, user):
-    try:
-        game = Game.objects.get(room_key= room_key)
-        
-    except Game.DoesNotExist:
-        return "error"
-    if user in game.players.all() or user == game.game_master:
-            return game
-    return "error"
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
 
     username = "None"
     user = None
-    game = None
-    #room_group_name = ""
 
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_key']
@@ -47,25 +37,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             print("papa")
             await self.disconnect(402)
             return
-        self.game = await get_room_data(self.room_name, self.user)
-        
-        if isinstance(self.game, str):
-            print("papa game")
-            await self.disconnect(406)
-            return
-        self.room_group_name = 'chat_%s' % self.game.slug
-        #self.room_group_name = 'chat_%s' % self.game.name
-
 
         self.scope["session"]["seed"] = random.randint(1,9999)
         self.scope["session"]["username"] = self.user.username
         self.scope["session"]["authorization"] = query['authorization']
-        self.scope["session"]["game"] = self.game
         print(f'{self.user.username}')
 
-       
-        
-        #self.channel_name = 'chat_%s' % self.game.room_key
 
         # Join room group
         await self.channel_layer.group_add(

@@ -21,7 +21,8 @@ class PostReaction(models.Model):
 
 @receiver(post_save, sender=PostReaction)
 def update_pluses_minuses_field(sender,instance,created, **kawgs):
-    if created:
+    if created or not created:
+  
         if instance.state == True:
             instance.post.pluses += 1 
         else:
@@ -30,8 +31,11 @@ def update_pluses_minuses_field(sender,instance,created, **kawgs):
 
 @receiver(pre_delete, sender=PostReaction)
 def update_pluses_minuses_before_delete(sender, instance, using, **kawgs):    
+   
     if instance.state == True:
-        instance.post.pluses -= 1
+        if instance.post.pluses > 0: 
+            instance.post.pluses -= 1
     else:
-        instance.post.minuses -= 1 
+        if instance.post.minuses > 0:
+            instance.post.minuses -= 1 
     instance.post.save()

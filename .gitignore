@@ -55,6 +55,9 @@ cover/
 *.mo
 *.pot
 
+#media 
+./rppbackend/media/
+
 # Django stuff:
 *.log
 local_settings.py
@@ -280,6 +283,7 @@ dist
 
 # Mono auto generated files
 mono_crash.*
+
 
 # Build results
 [Dd]ebug/

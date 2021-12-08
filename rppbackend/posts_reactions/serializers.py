@@ -14,3 +14,9 @@ class ReactionListSerializer(serializers.ModelSerializer):
         model = PostReaction
         read_only_fields = ('id','created')
         fields = ['id', 'created', 'user', 'user_username','post', 'post_title', 'post_absolute_url', 'state']
+
+class ReactionPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostReaction
+        read_only_fields = ('id','created')
+        fields = ['id', 'created', 'user','post', 'state']

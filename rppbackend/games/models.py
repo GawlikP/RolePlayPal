@@ -38,8 +38,13 @@ class Game(models.Model):
 def update_slug_field(sender, instance, created, **kwags):
     if created:
         instance.slug = unique_slugify(instance, slugify(instance.name))
+        
+        model = instance.__class__
+        room_key = get_random_string(length=250)
+        while model.objects.filter(room_key=room_key).exists():
+            room_key = get_random_string(length=250)
+        instance.room_key = room_key
         instance.save()
-        instance.room_key = get_random_string(length=250)
 
 
 class GameInvitation(models.Model):

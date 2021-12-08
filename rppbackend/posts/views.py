@@ -20,7 +20,7 @@ from rest_framework.response import Response
 
 from post_category.models import PostCategory
 
-from posts_reactions.serializers import ReactionListSerializer
+from posts_reactions.serializers import ReactionListSerializer, ReactionPostSerializer
 from posts_reactions.models import PostReaction
 
 from comments.models import PostComment
@@ -87,13 +87,14 @@ def CategoriesListView(request, format=None):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'PUT'])
 @permission_classes([IsAuthenticated])
 def PostReactionsListView(request, category_slug, post_slug, format=None):
     try:
         post = Post.objects.filter(category__slug=category_slug).get(slug=post_slug)
     except Post.DoesNotExist:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+        return Response({"errors": {"post": "Nie znaleziono posta"}},status=status.HTTP_404_NOT_FOUND)
+    print(post)
     if request.method == 'GET':
         reactions = PostReaction.objects.filter(post = post)
         serializer = ReactionListSerializer(reactions, many=True)
@@ -104,7 +105,21 @@ def PostReactionsListView(request, category_slug, post_slug, format=None):
         data = request.data 
         data['user'] = request.user.id
         data['post'] = post.id
-        serializer = ReactionListSerializer(data= data)
+        serializer = ReactionPostSerializer(data= data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if request.method == 'PUT':
+        try: 
+            reaction = PostReaction.objects.filter(post=post).filter(user=request.user).get()
+        except PostReaction.DoesNotExist:
+            return Response(data={"errors": {"Reaction": "Reaction Do not Exists"}},status=status.HTTP_409_CONFLICT)
+        data = request.data 
+        data['user'] = request.user.id 
+        data['post'] = post.id 
+        
+        serializer = ReactionPostSerializer(reaction,data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

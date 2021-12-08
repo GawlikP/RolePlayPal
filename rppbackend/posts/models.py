@@ -39,7 +39,7 @@ class Post(models.Model):
     category = models.ForeignKey(PostCategory, related_name='post_category', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='uploads/', blank=True, null=True)
     thumbnail = models.ImageField(upload_to='uploads/', blank=True, null=True)
-    slug = models.SlugField(max_length=1024,blank=True, null=True)
+    slug = models.SlugField(max_length=1024,default="",blank=True, null=True)
     
     def __str__(self):
         return self.title
@@ -50,8 +50,9 @@ class Post(models.Model):
         return f'/{self.category.slug}/{self.slug}/'
     
     def save(self, *args, **kwargs):
-        slug = slugify(self.title)
-        self.slug = unique_slugify(self, slug)
+        if not self.slug:
+            slug = slugify(self.title)
+            self.slug = unique_slugify(self, slug)
         super(Post, self).save(*args, **kwargs)
 
     def get_image(self):
