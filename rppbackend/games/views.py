@@ -13,6 +13,8 @@ from datetime import datetime
 from profiles.models import Profile
 from django.core.paginator import Paginator
 from django.db.models import Q
+from profiles.serializers import ProfileDetailSerializer
+
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -243,7 +245,23 @@ def GameGameInvitationsCancel(request, pk, format=None):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def NewUsersGameInvitation(request,game_id, format=True):
+    try: 
+        game = Game.objects.get(pk=game_id)
+    except Game.DoesNotExist:
+        return Response(data={"errors":{"game": "Does not exist"}}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == "GET":
+        if not request.user.id == game.game_master.id:
+            return Response(data={"errors":{"user": "Permission denaied"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+        profiles = Profile.objects.filter(~Q(user__in = game.players.all())).filter(~Q(user__pk = game.game_master.id)).all()
+        if request.GET.get('username'):
+            profiles = profiles.filter((Q(user__username__contains=request.GET.get('username'))) | (Q(slug__contains=request.GET.get('slug'))) )
+        if not profiles.exists():
+            return Response(data={"errors": {"profiles": "No profiles to show"}})
 
-
+        serializer = ProfileDetailSerializer(profiles, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
         
