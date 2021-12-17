@@ -62,6 +62,7 @@ def UsersGameListView(request, format=None):
         if int(page_number) > paginator.num_pages:
             return Response({'error': 'Page do not exist!'}, status=status.HTTP_404_NOT_FOUND)
         
+
         serializer = GameListSerializer(paginator.page(page_number), many=True)
         data = {}
         data['games'] = serializer.data 
@@ -81,7 +82,7 @@ def GameDetailSlugView(request,game_slug,format=None):
     
     if request.method == 'GET':
         serializer = GameListSerializer(game)
-        return Response(serializer.data, status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     if request.method == 'PUT':
         if game.user.id != request.user.id:
@@ -107,6 +108,19 @@ def GameDetailSlugView(request,game_slug,format=None):
             
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def GameRoomKeyDetailView(request, room_key, format=None):
+    try: 
+        game = Game.objects.get(room_key=room_key)
+    except Game.DoesNotExist:
+        return Response(data={"errors": {"game": "Does not exists"}}, status=status.HTTP_404_NOT_FOUND)
+    
+    if not request.user in game.players.all():
+            return Response(data={"errors": {"user": "permission denaied"}}, status=status.HTTP_404_NOT_FOUND)
+    serializer = GameListSerializer(game)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -264,4 +278,27 @@ def NewUsersGameInvitation(request,game_id, format=True):
 
         serializer = ProfileDetailSerializer(profiles, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
-        
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def RemovePlayerFromGame(request, game_slug, player_id, format=True):
+    try: 
+        game = Game.objects.get(slug=game_slug)
+    except Game.DoesNotExist:
+        return Response(data={"errors":{"game": "Does not exist"}}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        player = User.objects.get(pk=player_id)
+    except User.DoesNotExist:
+        return Response(data={"erors":{"player": "Does not exist"}}, status=status.HTTP_404_NOT_FOUND)
+    if not request.user.id == game.game_master.id:
+            return Response(data={"errors":{"user": "Permission denaied"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    
+    if not player in game.players.all():
+        return Response(data={"errors": {"player": "No player to remove"}}, status=status.HTTP_404_NOT_FOUND)
+
+    game.players.remove(player)
+    game.save()
+    serializer = GameInvitationListSerializer(game)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+    
+            

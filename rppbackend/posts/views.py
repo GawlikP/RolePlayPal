@@ -33,7 +33,7 @@ from django.core.paginator import Paginator
 @permission_classes([IsAuthenticated])
 def PostListView(request, format=None):
     if request.method == 'GET':
-        posts = Post.objects.all()
+        posts = Post.objects.filter(deleted=False).all()
         page_number = request.query_params.get('page_number', 1)                       
         page_size = request.query_params.get('page_size',5)        
             
@@ -70,13 +70,17 @@ def PostDetailView(request, category_slug, post_slug, format=None):
         return Response(serializer.data, status.HTTP_200_OK)
     
     if request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = PostDetailSerializer(post, data=data)
+        print("author id:" + str(post.author.id) + " user_id:" + str(request.user.id))
+        if not request.user.id == post.author.id:
+            return Response(data={"errors": {"author": "permission denaied"}}, status=status.HTTP_406_NOT_ACCEPTABLE) 
+        data = request.data
+        
+        serializer = PostDetailSerializer(post, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.erorrs, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -198,7 +202,7 @@ def PostCommentDetailView(request, pk, format=None):
         except PostComment.DoesNotExist:
             return Response(data={"errors": {"Post": "Do not found"}},status=status.HTTP_404_NOT_FOUND)
         data['post'] = postcomment.post.id
-        serializer = PostCommentListSerialzier(postcomment, data=data)
+        serializer = PostCommentListSerialzier(postcomment, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status= status.HTTP_200_OK)

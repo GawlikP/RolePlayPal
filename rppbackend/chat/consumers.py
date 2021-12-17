@@ -38,7 +38,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_name = self.scope['url_route']['kwargs']['room_key']
         self.room_group_name = 'chat_%s' % 'test'
 
-        print(f'{self.scope["user"]}')
+
 
         query = dict((x.split('=') for x in self.scope['query_string'].decode().split("&")))
         self.user = await get_user(query['authorization'])
@@ -61,7 +61,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.scope["session"]["username"] = self.user.username
         self.scope["session"]["authorization"] = query['authorization']
         self.scope["session"]["game"] = self.game
-        print(f'{self.user.username}')
+        self.scope["session"]["user_id"] = self.user.id
+      
 
        
         
@@ -92,7 +93,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if f != None:
             nums = re.findall(r'\d+',message)
-            print(nums)
+        
             rolls = []
             message = ""
             for i in range(0,int(nums[0])):
@@ -102,15 +103,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 message += f'ROLL({iterator}):{v} \n'
                 iterator += 1
 
+        data= {}
 
-        message = f'{self.scope["session"]["username"]}: {message}'
+        data['message'] = message
+        data['username'] = self.scope["session"]["username"]
+        data['user_id'] = self.scope["session"]["user_id"]
 
         # Send message to room group
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
-                'message': message
+                'message': data,
+           
             }
         )
 

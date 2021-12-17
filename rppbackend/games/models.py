@@ -20,7 +20,7 @@ class Game(models.Model):
     image = models.ImageField(upload_to='game_wallpapers', blank=True)
     game_master = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_master')
     deleted = models.BooleanField(default=False)
-    room_key = models.TextField(max_length=256, default='')
+    room_key = models.TextField(max_length=256, default='', unique=True)
 
     def __str__(self):
         return self.slug
