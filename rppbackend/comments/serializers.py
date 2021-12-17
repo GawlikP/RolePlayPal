@@ -12,5 +12,5 @@ class PostCommentListSerialzier(serializers.ModelSerializer):
     class Meta:
         model = PostComment
         #read_only_fields = ('id', 'created')
-        fields = ['id', 'created', 'content', 'user', 'user_username', 'post', 'post_absolute_url']
+        fields = ['id', 'created', 'content', 'user', 'user_username', 'post', 'post_absolute_url', 'deleted']
         read_only_fields = ('id','created','user_username','post_absolute_url')

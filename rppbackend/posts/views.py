@@ -173,7 +173,7 @@ def PostCommentListView(request, category_slug, post_slug, format=None):
         return  Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
         try: 
-            comments = PostComment.objects.filter(post = post)    
+            comments = PostComment.objects.filter(post = post).filter(deleted=False)   
         except PostComment.DoesNotExist:
             return HttpResponse(data={"errors": {"posts": "Do not found"}},status=status.HTTP_404_NOT_FOUND) 
         serializer = PostCommentListSerialzier(comments, many=True)
@@ -200,12 +200,12 @@ def PostCommentDetailView(request, pk, format=None):
         try:
             postcomment = PostComment.objects.get(pk=pk)
         except PostComment.DoesNotExist:
-            return Response(data={"errors": {"Post": "Do not found"}},status=status.HTTP_404_NOT_FOUND)
+            return Response(data={"errors": {"post": "Do not found"}},status=status.HTTP_404_NOT_FOUND)
         data['post'] = postcomment.post.id
         serializer = PostCommentListSerialzier(postcomment, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status= status.HTTP_200_OK)
+            return Response(serializer.data, status= status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
