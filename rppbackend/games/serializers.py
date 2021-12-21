@@ -41,7 +41,7 @@ class GameListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game 
         read_only_fields = ('id','slug', 'room_key')
-        fields = ['id','slug','created','game_master', 'edited','next_game','description','name','players','room_key','get_image']
+        fields = ['id','slug','created','edited','deleted','game_master', 'edited','next_game','description','name','players','room_key','get_image']
  
 class GamePostSerializer(serializers.ModelSerializer):
 

@@ -19,6 +19,9 @@ from rest_framework.renderers import JSONRenderer
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.db.models import Q
+from games.models import Game
+from games.serializers import GameListSerializer
+import json
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -183,3 +186,51 @@ def ProfileActualUserView(request, format=None):
             profile = serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ProfilePlayersList(request, profile_slug, format=None):
+    try: 
+        profile = Profile.objects.get(slug= profile_slug)
+    except Profile.DoesNotExist:
+        return HttpResponse(data={"errors": {"profile": "Does not exist"}},status=status.HTTP_404_NOT_FOUND)
+
+    games = Game.objects.filter(game_master__id = profile.user.id).filter(~Q(players=None)).all()
+    if not games.exists():
+        return Response(data={"errors": {"games": "Do not found"}}, status=status.HTTP_404_NOT_FOUND)
+    
+    players = games.first().players.all()
+    for g in games:
+        players.union(g.players.all())
+
+    limit = int(request.query_params.get('limit', 0))
+    if limit > 1:
+        profiles = Profile.objects.filter(Q(user__in=players)).all()[:limit]
+    else:
+        profiles = Profile.objects.filter(Q(user__in=players)).all()
+
+    serializer = ProfileDetailSerializer(profiles, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ProfileMastersList(request, profile_slug, format=None):
+    try: 
+        profile = Profile.objects.get(slug= profile_slug)
+    except Profile.DoesNotExist:
+        return HttpResponse(data={"errors": {"profile": "Does not exist"}},status=status.HTTP_404_NOT_FOUND)
+
+    games = Game.objects.filter(players__id = profile.user.id).all()
+    if not games.exists():
+        return Response(data={"errors": {"games": "Do not found"}}, status=status.HTTP_404_NOT_FOUND)
+    game_masters = games.values_list('game_master', flat=True)
+
+    limit = int(request.query_params.get('limit', 0))
+    if limit > 1:
+        profiles = Profile.objects.filter(Q(user__in=list(game_masters))).all()[:limit]
+    else:
+        profiles = Profile.objects.filter(Q(user__in=list(game_masters))).all()
+   
+
+    serializer = ProfileDetailSerializer(profiles, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

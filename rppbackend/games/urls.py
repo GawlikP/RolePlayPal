@@ -14,7 +14,7 @@ urlpatterns = [
     path('invitations/<int:pk>/accept/', GameGameInvitationsAccept, name='user accepts invitation endpoint'),
     path('invitations/<int:pk>/cancel/', GameGameInvitationsCancel, name='user canceled invitation endpoint'),
     path('<int:game_id>/invitations/new/', NewUsersGameInvitation, name='get users allowed to add and post new invitation'),
-    path('room_key/<str:room_key>/', GameRoomKeyDetailView, name='get game informations by room key')
+    path('room_key/<str:room_key>/', GameRoomKeyDetailView, name='get game information by room key')
    # path('invitations/', GameInvitationsListView),
    # path('invitations/me/',GameInvitationsMeView)
 ]

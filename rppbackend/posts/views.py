@@ -29,6 +29,10 @@ from rest_framework.renderers import JSONRenderer
 
 from django.core.paginator import Paginator
 
+from django.contrib.auth.models import User
+
+from django.db.models import Q
+
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def PostListView(request, format=None):
@@ -221,4 +225,12 @@ def PostCategoryListView(request, category_slug, format=None):
         serializer = PostDetailSerializer(category_posts, many=True)
         return Response(serializer.data, status.HTTP_200_OK)
     
- 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def testView(request, format=None):
+
+    users = User.objects.all()
+    posts = Post.objects.filter(Q(author__in=users)).all()
+    serializer = PostDetailSerializer(posts, many=True)
+    return Response(serializer.data)

@@ -50,7 +50,7 @@ def GamePlayersListView(request, game_slug, format=None):
 def UsersGameListView(request, format=None):
     if request.method == "GET":
         #games = Game.objects.filter(game_master__id= request.user.id)#Game.objects.filter(players__id = request.user.id) #  
-        games = Game.objects.filter( Q(players__id = request.user.id) | Q(game_master__id = request.user.id)).distinct()
+        games = Game.objects.filter(deleted=False).filter( Q(players__id = request.user.id) | Q(game_master__id = request.user.id)).distinct()
         
         if not games.exists():
             return Response(data={"errors": {"games": "Nothing to show"}}, status=status.HTTP_404_NOT_FOUND)
@@ -68,7 +68,7 @@ def UsersGameListView(request, format=None):
         data['games'] = serializer.data 
         data['page_numbers'] = paginator.num_pages
         data['next_page'] = False if int(page_number) >= paginator.num_pages else True
-        print(data['page_numbers'])
+
         return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'PUT'])
@@ -85,12 +85,12 @@ def GameDetailSlugView(request,game_slug,format=None):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     if request.method == 'PUT':
-        if game.user.id != request.user.id:
+        if game.game_master.id != request.user.id:
             return Response({'error': 'Permission denaied'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         data = request.data
+        print(data['deleted'])
         data['edited'] = datetime.now()
-        data['user'] = request.user.id
         
         if 'image' in data:
             print(data['image'])
@@ -106,7 +106,7 @@ def GameDetailSlugView(request,game_slug,format=None):
             game = serializer.save()
             
             
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_201_CREATED     )
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 @api_view(['GET'])
@@ -195,23 +195,39 @@ def GameGameInvitationsDetailView(request, pk, format=None):
 @permission_classes([IsAuthenticated])
 def GameGameInvitationsMeListView(request, format=None):
     if request.method == "GET":
+
+        
+
         my_game_invitations = GameInvitation.objects.filter(player__id=request.user.id)
         if not my_game_invitations.exists():
             return Response(data={"errors":{"player": "Dont have any invitations"}}, status=status.HTTP_404_NOT_FOUND)
         if request.GET.get('accepted'):
             my_game_invitations = my_game_invitations.filter(accepted=request.GET.get('accepted'))
-        elif request.GET.get('canceled'):
+        if request.GET.get('canceled'):
             my_game_invitations = my_game_invitations.filter(canceled=request.GET.get('canceled'))
         
         if not my_game_invitations.exists():
             return Response(data={"errors":{"invitations": "Nothing to show"}}, status=status.HTTP_404_NOT_FOUND)
         
+        page_number = request.query_params.get('page_number', 1)                       
+        page_size = request.query_params.get('page_size',5) 
+
+        paginator = Paginator(my_game_invitations, page_size)
+        if int(page_number) > paginator.num_pages:
+            return Response({'error': 'Page do not exist!'}, status=status.HTTP_404_NOT_FOUND)
+
         #my_game_invitations.update(readed=True)
 
-        serializer = GameInvitationListSerializer(my_game_invitations, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = GameInvitationListSerializer(paginator.page(page_number), many=True)
+        
+        data = {}
+        data['invitations'] = serializer.data 
+        data['page_numbers'] = paginator.num_pages
+        data['next_page'] = False if int(page_number) >= paginator.num_pages else True
 
-        serializer = GameInvitationListSerializer()
+        return Response(data, status=status.HTTP_200_OK)
+
+       
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
