@@ -81,7 +81,7 @@ def ProfileDetailView(request, pk, format=None):
         data['user'] = request.user.id
         
         if 'image' in data:
-            print(data['image'])
+            
             profile.image.delete()
             profile.image = data['image']
             profile.make_thumbnail(profile.image)
@@ -120,7 +120,7 @@ def ProfileDetailSlugView(request, profile_slug, format=None):
         data['user'] = request.user.id
         
         if 'image' in data:
-            print(data['image'])
+           
             profile.image.delete()
             profile.image = data['image']
             profile.make_thumbnail(profile.image)
@@ -140,7 +140,7 @@ def ProfileDetailSlugView(request, profile_slug, format=None):
 @permission_classes([IsAuthenticated])
 def ProfileUserIdView(request, pk, format=None):
     try: 
-        print(pk)
+        
        
         profile = Profile.objects.get(user__pk=pk)
     except Profile.DoesNotExist:

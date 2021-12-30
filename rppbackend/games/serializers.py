@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Game, GameInvitation
+from .models import Game, GameInvitation, GameHandout
 
 from django.contrib.auth.models import User
 from profiles.serializers import ProfileDetailSerializer
@@ -33,22 +33,41 @@ class PlayerSerializer(serializers.ModelSerializer):
 class GameDetailSerializer(serializers.ModelSerializer):
     pass 
 
+
+class GameHandoutListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameHandout
+        read_only_fields = ['id', 'slug', 'get_image']
+        fields = ['id','slug', 'created', 'edited', 'game', 'name', 'deleted', 'get_image']
+
+
 class GameListSerializer(serializers.ModelSerializer):
 
     players = PlayerSerializer(read_only= True, many = True)
     game_master = PlayerSerializer(read_only=False)
+    game_handouts = serializers.SerializerMethodField()
+    #game_handouts = serializers.PrimaryKeyRelatedField(many=True, read_only=True)  
 
     class Meta:
         model = Game 
         read_only_fields = ('id','slug', 'room_key')
-        fields = ['id','slug','created','edited','deleted','game_master', 'edited','next_game','description','name','players','room_key','get_image']
- 
+        fields = ['id','slug','created','edited','deleted','game_master', 'edited','next_game','description','name','players', 'game_handouts','room_key','get_main_wallpaper']
+
+    def get_game_handouts(self,obj):
+        try: 
+            handouts = GameHandout.objects.filter(game=obj.id, deleted= False).all()
+            print(handouts)
+            return GameHandoutListSerializer(handouts, many=True).data
+        except:
+            return ''
+
+
 class GamePostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Game
         read_only_fields = ('id','slug')
-        fields = ['id','slug','created','game_master', 'edited','next_game','description','name','players','room_key','get_image']
+        fields = ['id','slug','created','game_master','main_wallpaper', 'edited','next_game','description','name','players','room_key']
 
 class GameInvitationListSerializer(serializers.ModelSerializer):
 

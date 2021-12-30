@@ -24,8 +24,11 @@ def get_room_data(room_key, user):
         
     except Game.DoesNotExist:
         return "error"
-    if user in game.players.all() or user == game.game_master:
+    if user in game.players.all():
             return game
+    if user.id == game.game_master.id:
+        print("game master")
+        return game
     return "error"
 class ChatConsumer(AsyncWebsocketConsumer):
 
@@ -45,6 +48,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if isinstance(self.user, str):
             print("papa")
+            print(str)
             await self.disconnect(402)
             return
         self.game = await get_room_data(self.room_name, self.user)

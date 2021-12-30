@@ -6,8 +6,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import JSONParser
 from rest_framework import serializers, status
 from rest_framework.response import Response    
-from .models import Game, GameInvitation
+from .models import Game, GameInvitation, GameHandout
 from .serializers import GameListSerializer, GameInvitationListSerializer, GameInvitationPostSerializer, PlayerSerializer, GamePostSerializer
+from .serializers import GameHandoutListSerializer
 from django.contrib.auth.models import User 
 from datetime import datetime
 from profiles.models import Profile
@@ -117,7 +118,7 @@ def GameRoomKeyDetailView(request, room_key, format=None):
     except Game.DoesNotExist:
         return Response(data={"errors": {"game": "Does not exists"}}, status=status.HTTP_404_NOT_FOUND)
     
-    if not request.user in game.players.all():
+    if not request.user in game.players.all() and not request.user == game.game_master:
             return Response(data={"errors": {"user": "permission denaied"}}, status=status.HTTP_404_NOT_FOUND)
     serializer = GameListSerializer(game)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -294,9 +295,10 @@ def NewUsersGameInvitation(request,game_id, format=True):
 
         serializer = ProfileDetailSerializer(profiles, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def RemovePlayerFromGame(request, game_slug, player_id, format=True):
+def RemovePlayerFromGame(request, game_slug, player_id, format=None):
     try: 
         game = Game.objects.get(slug=game_slug)
     except Game.DoesNotExist:
@@ -316,5 +318,66 @@ def RemovePlayerFromGame(request, game_slug, player_id, format=True):
     serializer = GameInvitationListSerializer(game)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def GameHandoutsListView(request, game_slug, format=None):
+    try:
+        game = Game.objects.get(slug=game_slug)
+    except Game.DoesNotExist:
+        return Response(data={"errors": {"game": "Does not exists"}}, status=status.HTTP_404_NOT_FOUND)
     
+    if request.method == "GET":
+        handouts = GameHandout.objects.filter(game=game, deleted=False)
+        serializer = GameHandoutListSerializer(handouts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == "POST":
+        if game.game_master.id != request.user.id:
+            return Response({'error': {'game_master':'Permission denaied'}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        game_handout = GameHandout()
+
+        data = request.data
+        game_handout.game = game
+        game_handout.name = data['name']
+        if 'image' in data:
+  
+            game_handout.image = data['image']
+            game_handout.save()
+
+        data['edited'] = datetime.now()
+        serializer = GameHandoutListSerializer(game_handout, data=data,partial=True)
+        if serializer.is_valid():
+            
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def GameHandoutDetailView(request, game_slug, handout_slug, format=None):
+    try:
+        game = Game.objects.get(slug=game_slug)
+    except Game.DoesNotExist:
+        return Response(data={"errors": {"game": "Does not exists"}}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        gamehandout = GameHandout.objects.filter(game=game).get(slug=handout_slug)
+    except GameHandout.DoesNotExist:
+        return Response(data={"errors": {"game_handout": "Does not exist"}}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == "GET":
+        serializer = GameHandoutListSerializer(gamehandout)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    if request.method == "PUT":
+        if game.game_master.id != request.user.id:
+            return Response({'error': {'game_master':'Permission denaied'}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        data = request.data
+        data['edited'] = datetime.now()
+        serializer = GameHandoutListSerializer(gamehandout, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
             

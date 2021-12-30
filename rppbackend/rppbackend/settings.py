@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'djoser',
     'channels',
+    'django_extensions',
     'posts',
     'post_category',
     'posts_reactions',

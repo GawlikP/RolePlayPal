@@ -17,7 +17,7 @@ class Game(models.Model):
     name = models.TextField(unique=True, max_length=512)
     slug = models.SlugField(max_length=1024, blank=True, default='')
     players = models.ManyToManyField(User, blank=True)
-    image = models.ImageField(upload_to='game_wallpapers', blank=True)
+    main_wallpaper = models.ImageField(upload_to='game_wallpapers', blank=True)
     game_master = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_master')
     deleted = models.BooleanField(default=False)
     room_key = models.TextField(max_length=256, default='', unique=True)
@@ -28,11 +28,32 @@ class Game(models.Model):
     class Meta:
         ordering = ('-created',)
 
-    def get_image(self):
-        if self.image:
-            return 'http://127.0.0.1:8000' + self.image.url
+    def get_main_wallpaper(self):
+        if self.main_wallpaper:
+            return 'http://127.0.0.1:8000' + self.main_wallpaper.url
         return ''
 
+
+
+class GameHandout(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    edited = models.DateTimeField(auto_now_add=True)
+    name = models.TextField(max_length=512,blank=False, unique=True)
+    slug = models.SlugField(max_length=1024)
+    deleted = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='games_handouts', blank=True)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='game')
+
+    def __str__(self):
+        return self.slug 
+    
+    class Meta:
+        ordering = ('-created',)
+    
+    def get_image(self):
+        if self.image:
+            return 'http://127.0.0.1:8000' + self.image.url 
+        return ''
 
 @receiver(post_save, sender=Game)
 def update_slug_field(sender, instance, created, **kwags):
@@ -46,6 +67,11 @@ def update_slug_field(sender, instance, created, **kwags):
         instance.room_key = room_key
         instance.save()
 
+@receiver(post_save, sender=GameHandout)
+def update_slug_field(sender, instance, created, **kwags):
+    if created:
+        instance.slug = unique_slugify(instance, slugify(instance.name))
+        instance.save()
 
 class GameInvitation(models.Model):
     created = models.DateTimeField(auto_now_add=True)

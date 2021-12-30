@@ -226,11 +226,3 @@ def PostCategoryListView(request, category_slug, format=None):
         return Response(serializer.data, status.HTTP_200_OK)
     
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def testView(request, format=None):
-
-    users = User.objects.all()
-    posts = Post.objects.filter(Q(author__in=users)).all()
-    serializer = PostDetailSerializer(posts, many=True)
-    return Response(serializer.data)
