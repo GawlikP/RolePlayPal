@@ -90,7 +90,6 @@ def GameDetailSlugView(request,game_slug,format=None):
             return Response({'error': 'Permission denaied'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         data = request.data
-        print(data['deleted'])
         data['edited'] = datetime.now()
         
         if 'image' in data:

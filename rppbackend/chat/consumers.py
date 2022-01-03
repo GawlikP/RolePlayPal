@@ -27,9 +27,19 @@ def get_room_data(room_key, user):
     if user in game.players.all():
             return game
     if user.id == game.game_master.id:
-        print("game master")
         return game
     return "error"
+@database_sync_to_async
+def check_user_type(room_key, user):
+    try:
+        game = Game.objects.get(room_key= room_key)
+        
+    except Game.DoesNotExist:
+        return "error"
+    if user.id == game.game_master.id:
+        return "yes"
+    return "no"
+
 class ChatConsumer(AsyncWebsocketConsumer):
 
     username = "None"
@@ -58,6 +68,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.disconnect(406)
             return
         self.room_group_name = 'chat_%s' % self.game.slug
+        game_master = await check_user_type(self.room_name, self.user)
+
         #self.room_group_name = 'chat_%s' % self.game.name
 
 
@@ -66,6 +78,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.scope["session"]["authorization"] = query['authorization']
         self.scope["session"]["game"] = self.game
         self.scope["session"]["user_id"] = self.user.id
+        if game_master == "yes":
+            self.scope["session"]["game_master"] = True
+        else:
+            self.scope["session"]["game_master"] = False
       
 
        
@@ -91,6 +107,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
+        handout = ''
+        if self.scope["session"]["game_master"] and 'handout' in text_data_json:
+            handout = text_data_json['handout']
+        
+        
 
 
         f = re.fullmatch(r"/r\s\d+d\d+", message)
@@ -112,6 +133,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data['message'] = message
         data['username'] = self.scope["session"]["username"]
         data['user_id'] = self.scope["session"]["user_id"]
+        data['new_handout'] = handout
 
         # Send message to room group
         await self.channel_layer.group_send(
