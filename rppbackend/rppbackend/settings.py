@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'chat',
     'profiles',
     'games',
+    'private_messages',
+
 ]
 
 CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]

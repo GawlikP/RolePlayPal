@@ -37,10 +37,18 @@ from django.db.models import Q
 @permission_classes([IsAuthenticated])
 def PostListView(request, format=None):
     if request.method == 'GET':
-        posts = Post.objects.filter(deleted=False).all()
+      
         page_number = request.query_params.get('page_number', 1)                       
-        page_size = request.query_params.get('page_size',5)        
-            
+        page_size = request.query_params.get('page_size',5)      
+        title = request.query_params.get('title','')
+        category_slug = request.query_params.get('category', '')  
+
+        posts = Post.objects.filter(deleted=False).filter(Q(title__contains=title))
+        if category_slug != '':
+            posts = posts.filter(category__slug=category_slug).all()
+        else:
+            posts= posts.all()
+
         paginator = Paginator(posts, page_size)
         if int(page_number) > paginator.num_pages:
             return Response({'error': 'Page do not exist!'}, status=status.HTTP_404_NOT_FOUND)

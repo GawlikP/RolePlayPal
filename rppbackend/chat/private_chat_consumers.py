@@ -7,6 +7,9 @@ from django.contrib.auth.models import AnonymousUser
 
 from rest_framework.authtoken.models import Token
 from games.models import Game
+
+from profiles.models import Profile 
+from private_messages.models import PrivateMessage
 import re
 
 
@@ -17,39 +20,42 @@ def get_user(token):
         return token.user
     except Token.DoesNotExist:
         return "error"
+
 @database_sync_to_async
-def get_room_data(room_key, user):
-    try:
-        game = Game.objects.get(room_key= room_key)
-        
-    except Game.DoesNotExist:
-        return "error"
-    if user in game.players.all():
-            return game
-    if user.id == game.game_master.id:
-        return game
-    return "error"
+def get_receiver_profile(user2):
+    try: 
+        profile = Profile.objects.get(slug=user2)
+        return profile.user 
+    except Profile.DoesNotExist:
+        return "cannot get receiver profile"
+
 @database_sync_to_async
-def check_user_type(room_key, user):
+def store_message(text,sender,receiver):
     try:
-        game = Game.objects.get(room_key= room_key)
-        
-    except Game.DoesNotExist:
-        return "error"
-    if user.id == game.game_master.id:
-        return "yes"
-    return "no"
+        message = PrivateMessage(text=text, sender_user=sender, receiver_user=receiver)
+        message.save()
+        return message
+    except PrivateMessage.DoesNotExist:
+        return "cannot add message"
+
+@database_sync_to_async
+def get_thumbnail(user):
+    try:
+        profile = Profile.objects.get(slug=user)
+        return profile.get_thumbnail()
+    except Profile.DoesNotExist:
+        return 0
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
     username = "None"
     user = None
-    game = None
+
     #room_group_name = ""
 
     async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_key']
-        self.room_group_name = 'chat_%s' % 'test'
+        self.room_name = self.scope['url_route']['kwargs']['chat_name']
+        #self.room_group_name = 'chat_%s' % 'test'
 
 
 
@@ -58,30 +64,47 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if isinstance(self.user, str):
             print("papa")
-            print(str)
+            print(self.user)
             await self.disconnect(402)
             return
-        self.game = await get_room_data(self.room_name, self.user)
+       
         
-        if isinstance(self.game, str):
-            print("papa game")
-            await self.disconnect(406)
-            return
-        self.room_group_name = 'chat_%s' % self.game.slug
-        game_master = await check_user_type(self.room_name, self.user)
+        self.receiver = await get_receiver_profile(query['user2'])
 
-        #self.room_group_name = 'chat_%s' % self.game.name
+        if isinstance(self.receiver, str):
+            print(self.receiver)
+            await self.disconnect(402)
+            return
+        
+        if not 'user1' in query or not 'user2' in query:
+            await self.disconnect(402)
+            return 
+
+        thumbnail = await get_thumbnail(self.user)
+        if isinstance(thumbnail, int):
+            print("cannot fetch users thunbnail")
+            await self.disconnect(402)
+            return
+
+        players = []
+        players.append(query['user1'])
+        players.append(query['user2'])
+        print(players)
+        players.sort()
+        print(players)
+        players = ''.join(players)
+        print(players)
+        self.room_group_name = 'chat_%s' % players
 
 
         self.scope["session"]["seed"] = random.randint(1,9999)
         self.scope["session"]["username"] = self.user.username
         self.scope["session"]["authorization"] = query['authorization']
-        self.scope["session"]["game"] = self.game
         self.scope["session"]["user_id"] = self.user.id
-        if game_master == "yes":
-            self.scope["session"]["game_master"] = True
-        else:
-            self.scope["session"]["game_master"] = False
+        self.scope["session"]["receiver"] = self.receiver
+        self.scope["session"]["sender"] = self.user
+        self.scope["session"]["thumbnail"] = thumbnail
+   
       
 
        
@@ -107,33 +130,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
-        handout = ''
-        if self.scope["session"]["game_master"] and 'handout' in text_data_json:
-            handout = text_data_json['handout']
-        
+    
         
 
 
-        f = re.fullmatch(r"/r\s\d+d\d+", message)
-
-        if f != None:
-            nums = re.findall(r'\d+',message)
-        
-            rolls = []
-            message = ""
-            for i in range(0,int(nums[0])):
-                rolls.append(random.randint(0,int(nums[1])))
-            iterator = 1
-            for v in rolls:
-                message += f'ROLL({iterator}):{v} \n'
-                iterator += 1
+      
 
         data= {}
 
         data['message'] = message
         data['username'] = self.scope["session"]["username"]
         data['user_id'] = self.scope["session"]["user_id"]
-        data['new_handout'] = handout
+        #data['sender'] = self.scope["session"]["sender"].id
+        #data['receiver'] = self.scope["session"]["receiver"].id
+        data['thumbnail'] = self.scope["session"]["thumbnail"]
+        msg = await store_message(message, self.scope["session"]["sender"], self.scope["session"]["receiver"])
+        if isinstance(msg, str):
+            print(msg)
+
+        
 
         # Send message to room group
         await self.channel_layer.group_send(
@@ -148,7 +163,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from room group
     async def chat_message(self, event):
         message = event['message']
-
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'message': message

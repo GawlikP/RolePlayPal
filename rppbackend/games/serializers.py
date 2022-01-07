@@ -56,7 +56,6 @@ class GameListSerializer(serializers.ModelSerializer):
     def get_game_handouts(self,obj):
         try: 
             handouts = GameHandout.objects.filter(game=obj.id, deleted= False).all()
-            print(handouts)
             return GameHandoutListSerializer(handouts, many=True).data
         except:
             return ''
