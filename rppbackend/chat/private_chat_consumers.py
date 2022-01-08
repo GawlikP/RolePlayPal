@@ -32,7 +32,7 @@ def get_receiver_profile(user2):
 @database_sync_to_async
 def store_message(text,sender,receiver):
     try:
-        message = PrivateMessage(text=text, sender_user=sender, receiver_user=receiver)
+        message = PrivateMessage(text=text, sender_user=sender, receiver_user=receiver, readed=True)
         message.save()
         return message
     except PrivateMessage.DoesNotExist:
@@ -41,7 +41,7 @@ def store_message(text,sender,receiver):
 @database_sync_to_async
 def get_thumbnail(user):
     try:
-        profile = Profile.objects.get(slug=user)
+        profile = Profile.objects.get(user=user)
         return profile.get_thumbnail()
     except Profile.DoesNotExist:
         return 0

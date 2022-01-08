@@ -9,7 +9,7 @@ class PrivateMessage(models.Model):
     text = models.TextField(max_length=2048)
     receiver_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='receiver_user')
     sender_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sender_user')
-    readed = models.DateTimeField(blank=True, null=True)
+    readed = models.BooleanField(default=False)
 
     def __str__(self):
         return 'date:' + self.created.strftime('%Y-%m-%d %H:%M') + ' from:' + self.sender_user.username + ' to:' + self.receiver_user.username 

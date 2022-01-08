@@ -44,7 +44,7 @@ def check_user_type(room_key, user):
 @database_sync_to_async
 def get_t(user):
     try: 
-        profile = Profile.objects.get(slug=user)
+        profile = Profile.objects.get(user__id=user.id)
         return profile.get_thumbnail()
     except Profile.DoesNotExist:
         return 1
@@ -134,22 +134,48 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         
 
+        data= {}
 
-        f = re.fullmatch(r"/r\s\d+d\d+", message)
+        f = re.fullmatch(r"/r(\s(\d+d?\d*)\s?\+?)*", message)
 
         if f != None:
-            nums = re.findall(r'\d+',message)
-        
-            rolls = []
+            rolls = re.findall(r'\d+d\d+', message)
+            numbers = re.findall(r'\s\d+(?!d)\s?', message)
+            nums = []
+            for n in numbers:
+                nums.append(int(re.sub(r'\s', '', n)))
+            rolls_end = []
             message = ""
-            for i in range(0,int(nums[0])):
-                rolls.append(random.randint(0,int(nums[1])))
+            for x in rolls:
+                for i in range(0,int(x[0])):
+                    dice_type = re.sub(r'\d+d','', x)
+                    print("dice_type:" + str(dice_type))
+                    rolls_end.append(random.randint(0,int(dice_type)))
+            print("rolls_end" + str(rolls_end))
             iterator = 1
-            for v in rolls:
-                message += f'ROLL({iterator}):{v} \n'
+            for v in rolls_end:
+                message += f'ROLL({iterator} : {rolls[iterator-1]}):{v} \n'
                 iterator += 1
+            iterator = 0
+            print("Nums:" + str(nums))
+            for n in nums:
+                message += f'ADD({iterator+1}): {n}\n'
+                print("Number {interator}:" + str(n))
+                iterator +=1
+            result = 0 
+            result += sum(rolls_end)
+            if isinstance(nums, list):
+                result += sum(nums)
+            else:
+                result += nums
+            message += f'RESULT:{result}'
 
-        data= {}
+            data['result'] = result 
+            data['rolls'] = rolls
+            data['rolls_end'] = rolls_end
+            data['numbers'] = nums
+
+        
 
         data['message'] = message
         data['username'] = self.scope["session"]["username"]

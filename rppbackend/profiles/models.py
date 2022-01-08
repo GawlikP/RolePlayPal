@@ -23,6 +23,18 @@ def unique_slugify(instance, slug):
         unique_slug = slug + get_random_string(length=4)
     return unique_slug
 
+class ProfilePasswordReset(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    delete = models.BooleanField(default=False)
+    generaeted_password = models.TextField(max_length=64)
+    reded = models.BooleanField
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.username + " : " + str(self.created)
+
+    class Meta:
+        ordering = ('-created',) 
 
 class Profile(models.Model):
     created = models.DateTimeField(auto_now_add=True)

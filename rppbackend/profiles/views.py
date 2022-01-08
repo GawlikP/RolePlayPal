@@ -22,6 +22,12 @@ from django.db.models import Q
 from games.models import Game
 from games.serializers import GameListSerializer
 import json
+from django.core.mail import send_mail
+from django.conf import settings
+
+from private_messages.serializers import MessageUserSerializer
+from django.utils.crypto import get_random_string
+from rest_framework.authtoken.models import Token
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -234,3 +240,72 @@ def ProfileMastersList(request, profile_slug, format=None):
 
     serializer = ProfileDetailSerializer(profiles, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def UserResetProfilePassword(request, format=None):
+    try:
+        profile = Profile.objects.get(user= request.user)
+    except Profile.DoesNotExist:
+        return Response({"error": {"profile": "Does not exists"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    data = request.data
+    if 'email' in data:
+        if not data['email'] == request.user.email:
+            send_mail(
+                'Subject here',
+                'Here is the message.',
+                settings.EMAIL_HOST_USER,
+                [data['email']],
+                fail_silently=False,
+            )
+            serializer = ProfileDetailSerializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    return Response({"error": {"email": "Does not match"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def UserResetProfilePasswordByEmail(request, user_email, format=None):
+    try:
+        user = User.objects.get(email=user_email)
+    except User.DoesNotExist:
+        return Response({"error": {"user": "Does not exists"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    
+    password = get_random_string(length=32)
+    user.set_password(password)
+    token = Token.objects.get(user=user)
+    token.delete()
+    Token.objects.create(user=user)
+    user.save()
+    send_mail(
+        'Resetowanie Hasła',
+        f'Twoje hasło zostało zresetowane, oto twoje nowo wygenerowane haslo: {password}. Do konta na tym emailu.',
+        settings.EMAIL_HOST_USER,
+        [user.email],
+        fail_silently=False,
+    )
+    serializer = MessageUserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    return Response({"error": {"email": "Does not match"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def UserSetPasswordView(request, format=None):
+    try:
+        profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        return Response({"error": {"profile": "Does not exists"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    data = request.data
+    if not 'old_password' in data:
+        return Response({'error': {'old_password': 'Field is required.'}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if not 'new_password' in data:
+        return Response({'error': {'new_password': 'Field is required.'}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if not request.user.check_password(data['old_password']):
+        return Response({"error":{"old_password": "Does not match"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    user = request.user
+    user.set_password(data['new_password'])
+    user.save()
+    serializer = MessageUserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)

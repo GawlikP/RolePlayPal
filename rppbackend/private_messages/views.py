@@ -4,7 +4,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework import serializers, status 
 from rest_framework.response import Response 
 from .models import PrivateMessage, MessageCredential
-from django.db.models import Q 
+from django.db.models import Q, F
 
 from .serializers import PrivateMessageListSerializer, PrivateMessagePostSerializer,  MessageCredentialListSerializer, MessageCredentialPostSerializer
 from profiles.models import Profile
@@ -69,8 +69,10 @@ def UserPrivateMessagesWithProfileListView(request, profile_slug, format=None):
         privatemessages = PrivateMessage.objects.filter((Q(receiver_user=request.user,sender_user=profile.user)) | (Q(sender_user=request.user, receiver_user=profile.user))).order_by('created')
         if not privatemessages.exists():
             return Response(data={"errors": {"private_messages": "Nothing to show"}}, status=status.HTTP_200_OK)
-
-        serializer = PrivateMessageListSerializer(privatemessages.all(), many=True)
+        #privatemessages.update(readed=True)
+        #print(privatemessages)
+        privatemessages.all().update(readed=True)
+        serializer = PrivateMessageListSerializer(privatemessages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == 'POST':
@@ -177,4 +179,28 @@ def UserMessageCredentialProfileDetailView(request, profile_slug, format=None):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def UserLastPrivateMessagesListView(request, format=None):
+    my_credentials = MessageCredential.objects.filter(user_from=request.user).filter(status='A')
+    if my_credentials.exists():
+        users_allowed = my_credentials.values_list('user_to', flat=True)
+        pending_messages = PrivateMessage.objects.filter(sender_user__in=users_allowed).filter(receiver_user=request.user)
+        if not pending_messages.exists():
+            return Response({"error": {"private_messages": "Nothing to show"}}, status=status.HTTP_404_NOT_FOUND)
+        recent_messages = [] 
+        for user in users_allowed:
+            buf = pending_messages.filter(sender_user__id=user).first()
+            if buf:
+                recent_messages.append(buf)
+
+        if not recent_messages:
+            return Response({"error": {"private_messages": "Nothing to show"}}, status=status.HTTP_404_NOT_FOUND)
+         
+       
+        serializer = PrivateMessageListSerializer(recent_messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    return Response({"error": {"messagecredential": "Nothing to show"}}, status=status.HTTP_404_NOT_FOUND)
 

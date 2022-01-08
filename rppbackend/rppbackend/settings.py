@@ -112,6 +112,35 @@ REST_FRAMEWORK = {
 }
 
 
+#DJOSER = {
+#    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+#    'USERNAME_RESET_CONFIRM_URL': '/username/reset/confirm/{uid}/{token}',
+#    'ACTIVATION_URL': 'api/v1/activate/{uid}/{token}',
+#    'SEND_ACTIVATION_EMAIL': True,
+#    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
+#    'SERIALIZERS': 
+#    {
+#    'activation': 'djoser.serializers.ActivationSerializer',
+#    'password_reset': 'djoser.serializers.SendEmailResetSerializer',
+#    'password_reset_confirm': 'djoser.serializers.PasswordResetConfirmSerializer',
+#    'password_reset_confirm_retype': 'djoser.serializers.PasswordResetConfirmRetypeSerializer',
+#    'set_password': 'djoser.serializers.SetPasswordSerializer',
+#    'set_password_retype': 'djoser.serializers.SetPasswordRetypeSerializer',
+#    'set_username': 'djoser.serializers.SetUsernameSerializer',
+#    'set_username_retype': 'djoser.serializers.SetUsernameRetypeSerializer',
+#    'username_reset': 'djoser.serializers.SendEmailResetSerializer',
+#    'username_reset_confirm': 'djoser.serializers.UsernameResetConfirmSerializer',
+#    'username_reset_confirm_retype': 'djoser.serializers.UsernameResetConfirmRetypeSerializer',
+#    'user_create': 'djoser.serializers.UserCreateSerializer',
+#    'user_create_password_retype': 'djoser.serializers.UserCreatePasswordRetypeSerializer',
+#    'user_delete': 'djoser.serializers.UserDeleteSerializer',
+#    'user': 'djoser.serializers.UserSerializer',
+#    'current_user': 'djoser.serializers.UserSerializer',
+#    'token': 'djoser.serializers.TokenSerializer',
+#    'token_create': 'djoser.serializers.TokenCreateSerializer',
+#    },
+#}
+
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -184,3 +213,10 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR,'project_name/static')
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 MEDIA_URL = '/media/'
+
+EMAIL_HOST ='smtp.gmail.com'
+EMAIL_HOST_USER = 'roleplaypal.site@gmail.com'
+EMAIL_HOST_PASSWORD = 'rppbackend123'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
