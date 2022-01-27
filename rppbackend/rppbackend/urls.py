@@ -23,7 +23,6 @@ urlpatterns = [
     path('api/', include('djoser.urls')),
     path('api/', include('djoser.urls.authtoken')),
     path('api/posts/', include('posts.urls')),
-    path('chat/', include('chat.urls')),
     path('api/profiles/', include('profiles.urls')),
     path('api/games/', include('games.urls')),
     path('api/private_messages/', include('private_messages.urls')),

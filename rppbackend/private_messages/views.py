@@ -12,6 +12,8 @@ from profiles.models import Profile
 @permission_classes([IsAuthenticated])
 def PrivateMessageListView(request, format=None):
     if request.method == 'GET':
+        if not request.user.is_superuser:
+            return Response(data={'error': {'user','permission deneied'}}, status=status.HTTP_406_NOT_ACCEPTABLE)
         privatemessages = PrivateMessage.objects.all()
         serializer = PrivateMessageListSerializer(privatemessages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

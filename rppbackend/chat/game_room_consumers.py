@@ -140,21 +140,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if f != None:
             rolls = re.findall(r'\d+d\d+', message)
-            numbers = re.findall(r'\s\d+(?!d)\s?', message)
+            print(f'rolls:{rolls}')
+            numbers = re.findall(r'\s\d+(?!d)(?!\d+)\s?', message)
+            print(f'numbers:{numbers}')
             nums = []
             for n in numbers:
                 nums.append(int(re.sub(r'\s', '', n)))
             rolls_end = []
+            rolls_new = []
+            rolls_buffer = []
             message = ""
-            for x in rolls:
-                for i in range(0,int(x[0])):
+            how_many_rolls = []
+            for i,r in enumerate(rolls):
+                how_many_rolls.append(re.findall(r'\d+(?=d)', r))
+            print(f'how_many:{how_many_rolls}')
+            for i,x in enumerate(rolls):
+                dice_type = ''
+                for i in range(0,int(how_many_rolls[i][0])):
                     dice_type = re.sub(r'\d+d','', x)
-                    print("dice_type:" + str(dice_type))
-                    rolls_end.append(random.randint(0,int(dice_type)))
+                    print(f'dice_type[{i}]:' + str(dice_type))
+                    rd = random.randint(1,int(dice_type))
+                    rolls_end.append(rd)
+                    rolls_buffer.append(rd)
+                for r in rolls_buffer:
+                    rolls_new.append(f'd{dice_type}')
+                    rolls_buffer = []
             print("rolls_end" + str(rolls_end))
+            print("rolls_new:" + str(rolls_new))
             iterator = 1
             for v in rolls_end:
-                message += f'ROLL({iterator} : {rolls[iterator-1]}):{v} \n'
+                #message += f'ROLL({iterator} : {rolls[iterator-1]}):{v} \n'
                 iterator += 1
             iterator = 0
             print("Nums:" + str(nums))
@@ -171,7 +186,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message += f'RESULT:{result}'
 
             data['result'] = result 
-            data['rolls'] = rolls
+            data['rolls'] = rolls_new
             data['rolls_end'] = rolls_end
             data['numbers'] = nums
 

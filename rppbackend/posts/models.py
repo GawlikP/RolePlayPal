@@ -30,7 +30,6 @@ class Post(models.Model):
     deleted = models.BooleanField(default=False)
     title = models.CharField(max_length=1024,blank=False)
     content = models.TextField(default='')
-    tags = models.TextField(blank=True, default='')
     pluses = models.PositiveIntegerField(default=0)
     minuses = models.PositiveIntegerField(default=0)
     author = models.ForeignKey(User, on_delete=models.CASCADE)

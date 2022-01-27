@@ -11,8 +11,8 @@ urlpatterns = [
     path('<slug:profile_slug>/masters/', ProfileMastersList, name='get all masters of that profile'),
     path('user/<int:pk>/', ProfileUserIdView, name='get detail and put by user id'),
     path('me/reset_password/', UserResetProfilePassword, name='post password reset request'),
-    path('me/reset_password/email/<str:user_email>/', UserResetProfilePasswordByEmail, name='post reset password of email'),
-    path('me/set_password/', UserSetPasswordView, name='post for reseting password on actual requesting user, needed old_password and new_password'),
-    # wszyscy mistrzowie tego profilu
+    #path('me/reset_password/email/<str:user_email>/', UserResetProfilePasswordByEmail, name='post reset password of email'),
+    #path('me/set_password/', UserSetPasswordView, name='post for reseting password on actual requesting user, needed old_password and new_password'),
+
    
 ]

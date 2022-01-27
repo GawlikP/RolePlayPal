@@ -56,7 +56,7 @@ cover/
 *.pot
 
 #media 
-./rppbackend/media/
+/rppbackend/media/
 
 # Django stuff:
 *.log
